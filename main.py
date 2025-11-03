@@ -9,12 +9,33 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from typing import Annotated
+from fastapi.middleware.cors import CORSMiddleware
 
 # 1. Load variables from .env file
 load_dotenv()
 
 # 2. Create FastAPI app
 app = FastAPI()
+
+# --- ADD THIS ENTIRE BLOCK ---
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://127.0.0.1",
+    "http://127.0.0.1:8080",
+    "null"  # This is important to allow 'file://' origins
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins + ["*"], # Allow all for simplicity in dev
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows OPTIONS, POST, GET, etc.
+    allow_headers=["*"],  # Allows 'Content-Type', 'Authorization', etc.
+)
+
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 class UserCreate(BaseModel):

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Placements Predictor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="logo">
+                <span>AI</span>
+            </div>
+            <h2>Welcome Back</h2>
+            <p class="sub-text">Sign in to continue to your dashboard</p>
+
+            <form class="auth-form" id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="student@university.edu" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-gradient">Sign In</button>
+            </form>
+
+            <p class="switch-link">
+                Don't have an account? <a href="register.html">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const formData = new FormData();
+            formData.append('username', email);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('accessToken', data.access_token);
+                    
+                    alert('Login successful! Redirecting...');
+                    
+                    // --- THIS IS THE FIX ---
+                    // Changed 'dashboard.html' to 'profile.html'
+                    // This will now send the user to the "Resume & Profile" page.
+                    const currentPath = window.location.pathname;
+                    const dirPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                    window.location.href = dirPath + '/profile.html'; 
+                    
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (error) {
+                console.error('Login failed:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
