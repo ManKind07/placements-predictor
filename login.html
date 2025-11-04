@@ -35,6 +35,27 @@
     </div>
 
     <script>
+        // --- Helper to build full redirect paths ---
+        function getRedirectPath(targetFile) {
+            const currentPath = window.location.pathname;
+            const dirPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+            return dirPath + '/' + targetFile;
+        }
+        
+        // --- Helper to parse JWT token ---
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null; // Invalid token
+            }
+        }
+
         const loginForm = document.getElementById('login-form');
 
         loginForm.addEventListener('submit', async (event) => {
@@ -58,21 +79,26 @@
                 if (response.ok) {
                     localStorage.setItem('accessToken', data.access_token);
                     
+                    // 1. Parse the token to find the role
+                    const tokenData = parseJwt(data.access_token);
+                    const userRole = tokenData ? tokenData.role : 'student'; // Default to student
+
                     alert('Login successful! Redirecting...');
                     
-                    // --- THIS IS THE FIX ---
-                    // Changed 'dashboard.html' to 'profile.html'
-                    // This will now send the user to the "Resume & Profile" page.
-                    const currentPath = window.location.pathname;
-                    const dirPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                    window.location.href = dirPath + '/profile.html'; 
+                    // 2. Redirect based on the role
+                    if (userRole === 'officer') {
+                        window.location.href = getRedirectPath('officer-dashboard.html');
+                    } else {
+                        window.location.href = getRedirectPath('dashboard.html');
+                    }
                     
                 } else {
                     alert('Error: ' + data.detail);
                 }
             } catch (error) {
                 console.error('Login failed:', error);
-                alert('An error occurred. Please try again.');
+                // This is the error from your screenshot
+                alert('An error occurred. Please try again. (Is the backend server running with CORS?)');
             }
         });
     </script>

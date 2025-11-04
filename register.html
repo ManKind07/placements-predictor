@@ -21,11 +21,6 @@
                 <button id="role-officer">Placement Officer</button>
             </div>
 
-            <!-- 
-              WHY IT WORKS NOW: 
-              - The <form> has an id="register-form" so the script can find it.
-              - The inputs have `id`s (e.g., id="email") to get their values.
-            -->
             <form class="auth-form" id="register-form">
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -48,16 +43,19 @@
         </div>
     </div>
 
-    <!-- 
-      WHAT I ADDED:
-      This script block adds all the backend functionality.
-    -->
 <script>
     // --- Registration Page Logic ---
     let userRole = 'student'; // Default role
     const studentBtn = document.getElementById('role-student');
     const officerBtn = document.getElementById('role-officer');
     const registerForm = document.getElementById('register-form');
+
+    // --- Helper to build full redirect paths ---
+    function getRedirectPath(targetFile) {
+        const currentPath = window.location.pathname;
+        const dirPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+        return dirPath + '/' + targetFile;
+    }
 
     // 1. Read role from URL (from index.html)
     const urlParams = new URLSearchParams(window.location.search);
@@ -114,17 +112,13 @@
 
             if (response.ok) {
                 alert('Account created successfully! Please log in.');
-
-                // --- THIS IS THE FIX for the "not a valid URL" error ---
-                const currentPath = window.location.pathname;
-                const dirPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                window.location.href = dirPath + '/login.html';
+                // Use the helper to redirect
+                window.location.href = getRedirectPath('login.html');
 
             } else {
                 alert('Error: ' + data.detail); // Show backend error
             }
         } catch (error) {
-            // This catch block is what was being triggered before
             console.error('Registration failed:', error);
             alert('An error occurred. Check the console and make sure your backend is running with CORS.');
         }
